@@ -31,43 +31,44 @@ public class MyApplication extends Application{
             mCityDB = openCityDB();
             initCityList();
         }
-    private void initCityList(){
-        mCityList = new ArrayList<City>();
-        new Thread(new Runnable() {
+
+        /*初始化城市列表*/
+        private void initCityList(){
+            mCityList = new ArrayList<City>();
+            new Thread(new Runnable() {
             @Override
             public void run() {
-// TODO Auto-generated method stub
+            // TODO Auto-generated method stub
                 prepareCityList();
             }
         }).start();
-    }
-
-    private boolean prepareCityList() {
-        mCityList = mCityDB.getAllCity();
-        int i=0;
-        for (City city : mCityList) {
-            i++;
-            String cityName = city.getCity();
-            String cityCode = city.getNumber();
-            Log.d(TAG,cityCode+":"+cityName);
         }
-        Log.d(TAG,"i="+i);
-        return true;
+
+        private boolean prepareCityList() {
+            mCityList = mCityDB.getAllCity();
+            int i=0;
+            for (City city : mCityList) {
+                i++;
+                String cityName = city.getCity();
+                String cityCode = city.getNumber();
+                Log.d(TAG,cityCode+":"+cityName);
+            }
+            Log.d(TAG,"i="+i);
+            return true;
     }
-    public List<City> getCityList() {
+        public List<City> getCityList() {
         return mCityList;
     }
 
 
+    /*调用getInstance方法得到对象*/
+    public static MyApplication getInstance(){
+            return myApplication; }
 
-        public static MyApplication getInstance(){
-            return myApplication;
-        }
-
-    private CityDB openCityDB() {
+        /*创建打开数据库的方法*/
+        private CityDB openCityDB() {
         String path = "/data"
-                + Environment.getDataDirectory().getAbsolutePath
-                ()
+                + Environment.getDataDirectory().getAbsolutePath()
                 + File.separator + getPackageName()
                 + File.separator + "databases1"
                 + File.separator

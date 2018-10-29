@@ -3,10 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!--增加选择城市的布局文件-->
     <RelativeLayout
+        android:id = "@+id/title"
         android:layout_width="fill_parent"
         android:layout_height="45.0dip"
         android:background="#ffcd2626" >
+         <!--添加文字信息-->
         <TextView
             android:id="@+id/title_name"
             android:layout_width="fill_parent"
@@ -15,6 +18,7 @@
             android:text="当前城市：北京"
             android:textColor="#ffffffff"
             android:textSize="20.0dip" />
+         <!-- 添加返回图标-->
         <ImageView
             android:id="@+id/title_back"
             android:layout_width="45.0dip"
@@ -23,6 +27,7 @@
             android:layout_centerVertical="true"
             android:src="@drawable/base_action_bar_back_normal"
             />
+        <!--添加分隔线-->
         <ImageView
             android:layout_width="1.0dip"
             android:layout_height="40dip"
@@ -31,6 +36,23 @@
             android:layout_toRightOf="@id/title_back"
             android:background="#A71717"
             android:gravity="center" />
+    </RelativeLayout>
+
+    <!--增加一个相对布局：列表内容-->
+    <!--增加一个ListView控件-->
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title">
+
+        <ListView
+            android:id="@+id/list_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#ffffff"
+            >
+
+        </ListView>
     </RelativeLayout>
 
 </RelativeLayout>

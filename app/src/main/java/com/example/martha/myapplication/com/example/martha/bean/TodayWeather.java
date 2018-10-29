@@ -1,5 +1,7 @@
 package com.example.martha.myapplication.com.example.martha.bean;
 
+/*新建一个类*/
+/*利用工具生成get、set、toSring方法*/
 public class TodayWeather {
     private String city;
     private String updatetime;

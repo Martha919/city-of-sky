@@ -9,6 +9,7 @@ import com.example.martha.myapplication.com.example.martha.bean.City;
 import java.util.ArrayList;
 import java.util.List;
 
+/*创建CityDB操作类*/
 public class CityDB {
         public static final String CITY_DB_NAME = "city.db";
         private static final String CITY_TABLE_NAME = "city";

@@ -1,5 +1,6 @@
 package com.example.martha.myapplication.com.example.martha.bean;
 
+/*增加选择城市的Acticity*/
 public class City {
     private String province;
     private String city;
@@ -8,6 +9,7 @@ public class City {
     private String allPY;
     private String allFristPY;
 
+    /*增加构造函数City*/
     public City(String province, String city, String number, String
             firstPY, String allPY, String allFristPY) {
         this.province = province;
