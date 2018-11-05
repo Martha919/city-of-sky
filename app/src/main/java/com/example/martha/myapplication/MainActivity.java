@@ -8,6 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,12 +41,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             temperatureTv, climateTv, windTv, city_name_Tv;
     private ImageView weatherImg, pmImg;
 
+    //更新图标旋转
+    Animation operatingAnim = null;
+    //LinearInterpolator为匀速效果
+    LinearInterpolator lin = null;
+
     /*调用更新天气的函数，更新界面上的数据*/
     private Handler mHandler = new Handler() {
         public void handleMessage(android.os.Message msg) {
             switch (msg.what) {
                 case UPDATE_TODAY_WEATHER:
                     updateTodayWeather((TodayWeather) msg.obj);
+                    /*调用claerAnimation：动画提前关闭*/
+
                     break;
                 default:
                     break;
@@ -117,7 +127,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startActivityForResult(i,1);
         }
 
+        /*构造更新图标的动画函数Animation*/
+        /*调用Interpolator方法设置动画放映速度*/
+
+
         if(view.getId() == R.id.title_update_btn){
+
+            /*更新图标的动画开始*/
+
 
             /*通过sharedpreferences方法读取城市ID，无定义可缺省为北京市*/
             SharedPreferences sharedPreferences = getSharedPreferences("config", MODE_PRIVATE);
@@ -156,8 +173,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void queryWeatherCode(String cityCode) {
         final String address = "http://wthrcdn.etouch.cn/WeatherApi?citykey=" + cityCode;
-
         Log.d("myWeather", address);
+
+        /*更新按钮旋转*/
+        operatingAnim = AnimationUtils.loadAnimation(MainActivity.this, R.anim.title_update);
+        lin = new LinearInterpolator(); //LinearInterpolator为匀速效果
+        operatingAnim.setInterpolator(lin);//设置旋转效果
+        /*开始旋转*/
+        if (operatingAnim != null) {
+            mUpdateBtn.startAnimation(operatingAnim);
+            Log.d("start anim","开始旋转");
+        }
+
         new Thread(new Runnable() {
             @Override
             public void run() {

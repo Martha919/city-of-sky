@@ -5,9 +5,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -23,12 +26,17 @@ public class SelectCity extends AppCompatActivity implements View.OnClickListene
 
     private ImageView mBackBtn;
     private TextView city_name_Tv;
+    private TextView mTextView;
+    private EditText mEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.select_city);
+
+        mEditText = (EditText) findViewById(R.id.search_edit);
+        mEditText.addTextChangedListener(mTextWatcher);
 
         /*实现城市列表的展示*/
         /*获取城市名称的ID，并用setText方法储存*/
@@ -42,6 +50,8 @@ public class SelectCity extends AppCompatActivity implements View.OnClickListene
             cityNameList.add(c.getCity());
             cityCodeList.add(c.getNumber());
         }
+        /*创建一个数组适配器*/
+        /*绑定数据与View的适配器*/
         ListView mlistView = (ListView) findViewById(R.id.list_view);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, cityNameList);
         mlistView.setAdapter(adapter);
@@ -82,6 +92,58 @@ public class SelectCity extends AppCompatActivity implements View.OnClickListene
                 break;
         }
     }
+
+    TextWatcher mTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+            }
+        @Override
+        public void onTextChanged(CharSequence charSequence, int start, int i2, int i3) {
+            List<City> cityList = ((MyApplication) getApplication()).getCityList();
+            final ArrayList<String> cityNameList = new ArrayList<>(cityList.size());
+            final ArrayList<String> cityCodeList = new ArrayList<>(cityList.size());
+            int i = 0;
+            for (City c : cityList) {
+                StringBuilder builder = new StringBuilder();
+                builder.append("NO." + String.valueOf(i++) + "-" + c.getProvince() + "-" + c.getCity());
+                if (builder.toString().contains(charSequence)) {
+                    cityNameList.add(builder.toString());
+                    cityCodeList.add(c.getNumber());
+                }
+            }
+            ListView mlistView = (ListView) findViewById(R.id.list_view);
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(SelectCity.this, android.R.layout.simple_list_item_1, cityNameList);
+
+            mlistView.setAdapter(adapter);
+
+            mBackBtn = (ImageView) findViewById(R.id.title_back);
+            mBackBtn.setOnClickListener(SelectCity.this);
+
+            mlistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    String cityCode = cityCodeList.get(i);
+                    String cityName = cityNameList.get(i);
+                    SharedPreferences sharedPreferences = getSharedPreferences("config", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("main_city_code", cityCode);
+                    editor.putString("main_city_name", cityName);
+                    editor.commit();
+                    Intent intent = new Intent();
+                    intent.putExtra("cityCode", cityCode);
+                    setResult(RESULT_OK, intent);
+                    finish();
+                }
+            });
+        }
+        @Override
+        public void afterTextChanged(Editable editable) {
+
+        }
+
+
+
+    };
 
 
 }
