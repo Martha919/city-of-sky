@@ -1,7 +1,10 @@
 package com.example.martha.myapplication;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Geocoder;
+import android.location.Location;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -12,9 +15,15 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.map.BaiduMap;
 import com.example.martha.myapplication.com.example.martha.bean.TodayWeather;
 import com.example.martha.myapplication.com.example.martha.myapplication.util.NetUtil;
 
@@ -29,8 +38,9 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends Activity implements View.OnClickListener{
 
     private static final int UPDATE_TODAY_WEATHER = 1;
 
@@ -40,11 +50,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView cityTv, timeTv, humidityTv, weekTv, pmDataTv, pmQualityTv,
             temperatureTv, climateTv, windTv, city_name_Tv;
     private ImageView weatherImg, pmImg;
+    private ProgressBar progressBar;
 
-    //更新图标旋转
-    Animation operatingAnim = null;
-    //LinearInterpolator为匀速效果
-    LinearInterpolator lin = null;
+    /*定义用户位置代理类，监听用户位置，传递当前位置*/
+    public LocationClient mLocationClient = null;
+    private BDLocationListener myListener = new MyLocationListener();
+    String code = null;
+
+
 
     /*调用更新天气的函数，更新界面上的数据*/
     private Handler mHandler = new Handler() {
@@ -52,8 +65,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             switch (msg.what) {
                 case UPDATE_TODAY_WEATHER:
                     updateTodayWeather((TodayWeather) msg.obj);
-                    /*调用claerAnimation：动画提前关闭*/
-
                     break;
                 default:
                     break;
@@ -67,10 +78,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        /*查询用户位置的函数*/
+        startLocate();
+
         /*获取网络状态的更新控件的ID*/
         /* 监听控件，当控件被点击时通过onclick方法进行响应*/
         mUpdateBtn = (ImageView)findViewById(R.id.title_update_btn);
         mUpdateBtn.setOnClickListener(this);
+
+        mLocationClient = new LocationClient(getApplicationContext());
+        mLocationClient.registerLocationListener(myListener);
 
         /*检测网络是否连接*/
         if (NetUtil.getNetworkState(this) != NetUtil.NETWORN_NONE) {
@@ -81,6 +98,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.d("myWeather", "网络挂了");
             Toast.makeText(MainActivity.this,"网络挂了！", Toast.LENGTH_LONG).show();
         }
+
+        /*初始化更新按钮*/
+        progressBar = (ProgressBar) findViewById(R.id.loading);
 
         /*为城市选择这个Imageview增加onclick事件*/
         /*获取城市选择的更新控件的ID*/
@@ -134,7 +154,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(view.getId() == R.id.title_update_btn){
 
             /*更新图标的动画开始*/
-
+            /*设置ProgressBar可见，ImageView不可见*/
+            mUpdateBtn.setVisibility(View.GONE);
+            progressBar.setVisibility(View.VISIBLE);
 
             /*通过sharedpreferences方法读取城市ID，无定义可缺省为北京市*/
             SharedPreferences sharedPreferences = getSharedPreferences("config", MODE_PRIVATE);
@@ -175,15 +197,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final String address = "http://wthrcdn.etouch.cn/WeatherApi?citykey=" + cityCode;
         Log.d("myWeather", address);
 
-        /*更新按钮旋转*/
-        operatingAnim = AnimationUtils.loadAnimation(MainActivity.this, R.anim.title_update);
-        lin = new LinearInterpolator(); //LinearInterpolator为匀速效果
-        operatingAnim.setInterpolator(lin);//设置旋转效果
-        /*开始旋转*/
-        if (operatingAnim != null) {
-            mUpdateBtn.startAnimation(operatingAnim);
-            Log.d("start anim","开始旋转");
-        }
 
         new Thread(new Runnable() {
             @Override
@@ -322,6 +335,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /*编写更新天气的函数*/
     void updateTodayWeather(TodayWeather todayWeather){
+
+        /*设置ImageView可见，ProgressBar不可见*/
+        if(mUpdateBtn.getVisibility()==View.GONE && progressBar.getVisibility()==View.VISIBLE){
+            progressBar.setVisibility(View.GONE);
+            mUpdateBtn.setVisibility(View.VISIBLE);
+        }
+
         city_name_Tv.setText(todayWeather.getCity()+"天气");
         cityTv.setText(todayWeather.getCity());
         timeTv.setText(todayWeather.getUpdatetime()+ "发布");
@@ -333,6 +353,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         climateTv.setText(todayWeather.getType());
         windTv.setText("风力:"+todayWeather.getFengli());
         Toast.makeText(MainActivity.this,"更新成功！",Toast.LENGTH_SHORT).show();
+    }
+
+    /*查询用户位置的函数*/
+    protected void startLocate(){
+        mLocationClient = new LocationClient(getApplicationContext());//创建一个用户位置代理的类
+        mLocationClient.registerLocationListener(myListener);//注册其监听事件
+        LocationClientOption option = new LocationClientOption();//设置一个用户位置代理的选项类
+        option.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);//设置该模式为省电的模式
+        option.setCoorType("bd0911");//设置坐标的类型
+        option.setOpenGps(true);//设置是否打开GPS
+        option.setLocationNotify(true);//设置是否当GPS有效时按照1S/1次频率输出GPS结果
+        option.setIsNeedAddress(true);//，设置是否需要地址信息，默认不需要！！注意，这个很重要，我们是需要返回地址的
+        option.setIsNeedLocationDescribe(true);//设置是否需要位置语义化结果
+        option.setIsNeedLocationPoiList(true);//设置是否需要POI结果
+        option.setIgnoreKillProcess(false);//默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
+        mLocationClient.setLocOption(option);//将这些选项加载到用户位置代理类
+        mLocationClient.start();//开始位置代理
+    }
+
+    private class MyLocationListener implements BDLocationListener{
+        @Override
+        public void onReceiveLocation(BDLocation location) {
+            Log.d("where","city:"+location.getCountry());
+            code = location.getCity();
+            code = code.replace("市","");
+            code = code.replace("省","");
+            Log.d("where","定位显示："+code);
+        }
     }
 
 }

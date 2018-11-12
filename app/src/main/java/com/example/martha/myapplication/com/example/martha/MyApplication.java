@@ -5,6 +5,8 @@ import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.baidu.mapapi.CoordType;
+import com.baidu.mapapi.SDKInitializer;
 import com.example.martha.myapplication.com.example.martha.bean.City;
 import com.example.martha.myapplication.com.example.martha.db.CityDB;
 
@@ -14,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.baidu.mapapi.SDKInitializer.initialize;
 
 public class MyApplication extends Application{
         private static final String TAG = "MyApp";
@@ -30,6 +34,10 @@ public class MyApplication extends Application{
             myApplication = this;
             mCityDB = openCityDB();
             initCityList();
+
+            //在使用SDK各组件之前初始化context信息，传入ApplicationContext
+            SDKInitializer.initialize(this);
+            SDKInitializer.setCoordType(CoordType.BD09LL);
         }
 
         /*初始化城市列表*/

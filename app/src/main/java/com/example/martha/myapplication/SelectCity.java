@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*增加选择城市的Acticity*/
-public class SelectCity extends AppCompatActivity implements View.OnClickListener{
+public class SelectCity extends Activity implements View.OnClickListener{
 
     private ImageView mBackBtn;
     private TextView city_name_Tv;
