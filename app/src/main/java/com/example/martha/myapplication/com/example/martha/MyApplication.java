@@ -36,8 +36,8 @@ public class MyApplication extends Application{
             initCityList();
 
             //在使用SDK各组件之前初始化context信息，传入ApplicationContext
-            SDKInitializer.initialize(this);
-            SDKInitializer.setCoordType(CoordType.BD09LL);
+
+
         }
 
         /*初始化城市列表*/

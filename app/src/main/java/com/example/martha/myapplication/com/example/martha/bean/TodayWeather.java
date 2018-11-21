@@ -1,5 +1,7 @@
 package com.example.martha.myapplication.com.example.martha.bean;
 
+import java.util.List;
+
 /*新建一个类*/
 /*利用工具生成get、set、toSring方法*/
 public class TodayWeather {
@@ -15,6 +17,37 @@ public class TodayWeather {
     private String high;
     private String low;
     private String type;
+
+    //六日天气
+    private List<NextDayWeather> nextDayWeatherList;
+    public List<NextDayWeather> getNextDayWeatherList() {
+
+
+
+        return nextDayWeatherList;
+
+
+
+    }
+
+
+
+
+
+
+
+    public void setNextDayWeatherList(List<NextDayWeather> nextDayWeatherList) {
+
+
+
+        this.nextDayWeatherList = nextDayWeatherList;
+
+
+
+    }
+
+
+
 
     public String getCity() {
         return city;
@@ -127,6 +160,7 @@ public class TodayWeather {
                 ", high='" + high + '\''+
                 ", low='" + low + '\''+
                 ", type='" + type + '\''+
+                ", nextDayWeatherList=" + nextDayWeatherList.toString() +
                 '}';
     }
 
